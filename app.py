@@ -69,6 +69,23 @@ st.markdown("""
 
   [data-testid="stFileUploaderDropzone"] { border-radius: 12px !important; }
 
+  /* Výber užívateľa — kartičky */
+  .user-card-wrap .stButton > button {
+    height: 110px !important;
+    border: 2px solid #e5e5e5 !important;
+    background: #fff !important;
+    color: #111 !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    border-radius: 14px !important;
+    transition: all 0.15s !important;
+  }
+  .user-card-wrap .stButton > button:hover {
+    border-color: #16a34a !important;
+    background: #f0fdf4 !important;
+    color: #16a34a !important;
+  }
+
   /* Krajiny — radio štylizovaný ako taby */
   div[data-testid="stRadio"] > label { display: none !important; }
   div[data-testid="stRadio"] > div {
@@ -144,6 +161,23 @@ def gh_get_file(filename):
     except Exception:
         pass
     return None
+
+
+def gh_load_user(user):
+    """Načíta uložené krajiny užívateľa z GitHubu."""
+    data = gh_get_file(f"user_{user}.json")
+    if data:
+        try:
+            return json.loads(data.decode("utf-8")).get("krajiny", [])
+        except Exception:
+            pass
+    return []
+
+
+def gh_save_user(user, krajiny):
+    """Uloží krajiny užívateľa na GitHub."""
+    content = json.dumps({"user": user, "krajiny": krajiny}, ensure_ascii=False, indent=2).encode("utf-8")
+    gh_save_file(f"user_{user}.json", content)
 
 
 def gh_save_history(country, history_data, sha=None):
@@ -244,17 +278,62 @@ if not st.session_state.auth:
     st.stop()
 
 
-# ── 2. VÝBER KRAJÍN ──────────────────────────────────────────────────────────
+# ── 2. VÝBER UŽÍVATEĽA ───────────────────────────────────────────────────────
 
+if "active_user" not in st.session_state:
+    st.session_state.active_user = None
 if "krajiny" not in st.session_state:
     st.session_state.krajiny = []
 
+if not st.session_state.active_user:
+    _, col, _ = st.columns([1, 1.6, 1])
+    with col:
+        st.markdown('<div class="mid-brand" style="text-align:center">CSS × Ads</div>', unsafe_allow_html=True)
+        st.markdown('<p style="font-size:22px;font-weight:800;color:#111;text-align:center;margin-bottom:8px;">Kto sa prihlasuje?</p>', unsafe_allow_html=True)
+        st.markdown('<p style="font-size:14px;color:#888;text-align:center;line-height:1.6;margin-bottom:32px;">Vyber svoje meno — appka ti zobrazí tvoje krajiny.</p>', unsafe_allow_html=True)
+
+        u1, u2, u3 = st.columns(3)
+        for col_u, user in zip([u1, u2, u3], USERS):
+            with col_u:
+                initial = user[0].upper()
+                st.markdown(f"""
+                <div style="text-align:center;padding:12px 0 4px;">
+                  <div style="width:48px;height:48px;border-radius:50%;background:#f1f5f9;
+                    margin:0 auto 8px;display:flex;align-items:center;justify-content:center;
+                    font-size:20px;font-weight:700;color:#475569;line-height:48px;">{initial}</div>
+                </div>
+                """, unsafe_allow_html=True)
+                st.markdown('<div class="user-card-wrap">', unsafe_allow_html=True)
+                if st.button(user, use_container_width=True, key=f"user_btn_{user}"):
+                    st.session_state.active_user = user
+                    st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
+    st.stop()
+
+
+# ── 2b. Načítaj krajiny užívateľa z GitHubu ───────────────────────────────────
+
 if not st.session_state.krajiny:
+    user = st.session_state.active_user
+    load_key = f"user_loaded_{user}"
+    if load_key not in st.session_state:
+        with st.spinner(f"Načítavam profil {user}..."):
+            saved = gh_load_user(user)
+        st.session_state[load_key] = True
+        if saved:
+            st.session_state.krajiny = saved
+            st.session_state.aktivna_krajina = saved[0]
+            st.rerun()
+
+# ── 3. VÝBER KRAJÍN (len ak nemá uložené) ─────────────────────────────────────
+
+if not st.session_state.krajiny:
+    user = st.session_state.active_user
     _, col, _ = st.columns([1, 1.4, 1])
     with col:
-        st.markdown('<div class="mid-brand">CSS × Ads</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="mid-brand">CSS × Ads — {user}</div>', unsafe_allow_html=True)
         st.markdown('<p style="font-size:22px;font-weight:800;color:#111;margin-bottom:8px;">Pre ktoré krajiny budeš aktualizovať dáta?</p>', unsafe_allow_html=True)
-        st.markdown('<p style="font-size:14px;color:#888;line-height:1.6;margin-bottom:28px;">Vyber krajiny ktoré spravuješ — appka ti zobrazí len ich.</p>', unsafe_allow_html=True)
+        st.markdown('<p style="font-size:14px;color:#888;line-height:1.6;margin-bottom:28px;">Vyber krajiny ktoré spravuješ — uložia sa pre teba, nabudúce sa to nebude pýtať.</p>', unsafe_allow_html=True)
 
         selected = []
         c1, c2, c3 = st.columns(3)
@@ -265,10 +344,12 @@ if not st.session_state.krajiny:
                     selected.append(k)
 
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("Pokračovať →", use_container_width=True, type="primary",
+        if st.button("Uložiť a pokračovať →", use_container_width=True, type="primary",
                      disabled=len(selected) == 0):
             st.session_state.krajiny = selected
             st.session_state.aktivna_krajina = selected[0]
+            with st.spinner("Ukladám profil..."):
+                gh_save_user(user, selected)
             st.rerun()
     st.stop()
 
