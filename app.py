@@ -74,14 +74,14 @@ st.markdown("""
     gap: 6px !important; justify-content: flex-end !important;
   }
   div[data-testid="stRadio"] > div > label {
-    padding: 5px 12px !important; border-radius: 8px !important;
+    min-width: 44px !important; padding: 5px 12px !important; border-radius: 8px !important;
     border: 1.5px solid #e5e5e5 !important; background: #fff !important;
     font-size: 12px !important; font-weight: 600 !important; color: #555 !important;
-    cursor: pointer !important;
+    cursor: pointer !important; text-align: center !important; justify-content: center !important;
   }
   div[data-testid="stRadio"] > div > label > div:first-child { display: none !important; }
   div[data-testid="stRadio"] > div > label:has(input:checked) {
-    border-color: #111 !important; background: #111 !important; color: #fff !important;
+    border-color: #16a34a !important; background: #16a34a !important; color: #fff !important;
   }
 </style>
 """, unsafe_allow_html=True)
@@ -249,7 +249,6 @@ if "krajiny" not in st.session_state:
 if not st.session_state.krajiny:
     _, col, _ = st.columns([1, 1.4, 1])
     with col:
-        st.markdown('<div class="mid-card">', unsafe_allow_html=True)
         st.markdown('<div class="mid-brand">CSS × Ads</div>', unsafe_allow_html=True)
         st.markdown('<p style="font-size:22px;font-weight:800;color:#111;margin-bottom:8px;">Pre ktoré krajiny budeš aktualizovať dáta?</p>', unsafe_allow_html=True)
         st.markdown('<p style="font-size:14px;color:#888;line-height:1.6;margin-bottom:28px;">Vyber krajiny ktoré spravuješ — appka ti zobrazí len ich.</p>', unsafe_allow_html=True)
@@ -268,7 +267,6 @@ if not st.session_state.krajiny:
             st.session_state.krajiny = selected
             st.session_state.aktivna_krajina = selected[0]
             st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
 
 
@@ -441,8 +439,7 @@ with btn_col2:
     st.markdown('<div class="red-btn">', unsafe_allow_html=True)
     save_clicked = st.button("Uložiť históriu do GitHubu", use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
-
-st.markdown('<p style="font-size:12px;color:#888;margin-top:6px;">Nezabudni uložiť — bez toho budeš musieť budúci mesiac nahrať Ads export znova.</p>', unsafe_allow_html=True)
+    st.markdown('<p style="font-size:12px;color:#888;margin-top:2px;">Nezabudni uložiť — bez toho budeš musieť budúci mesiac nahrať Ads export znova.</p>', unsafe_allow_html=True)
 
 if save_clicked:
     with st.spinner("Ukladám..."):
