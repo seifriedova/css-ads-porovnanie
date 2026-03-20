@@ -3,6 +3,7 @@ Minimum clicks a No conversion kampane — mesacny export novych eshopov a negat
 """
 
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import json
 import io
@@ -435,12 +436,33 @@ with btn_col1:
         file_name=f"pridat_do_ads_{krajina}_{date.today()}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         use_container_width=True,
+        type="primary",
     )
 with btn_col2:
-    st.markdown('<div class="red-btn">', unsafe_allow_html=True)
     save_clicked = st.button("Uložiť históriu do GitHubu", use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('<p style="font-size:12px;color:#888;margin-top:2px;">Nezabudni uložiť — bez toho budeš musieť budúci mesiac nahrať Ads export znova.</p>', unsafe_allow_html=True)
+
+# JS — červený button pre "Uložiť históriu"
+components.html("""
+<script>
+(function() {
+  function styleBtn() {
+    var buttons = window.parent.document.querySelectorAll('button');
+    buttons.forEach(function(btn) {
+      if (btn.innerText && btn.innerText.includes('Ulo\u017Ei\u0165 hist\u00F3riu do GitHubu')) {
+        btn.style.setProperty('background', '#dc2626', 'important');
+        btn.style.setProperty('color', '#fff', 'important');
+        btn.style.setProperty('border', 'none', 'important');
+      }
+    });
+  }
+  styleBtn();
+  setTimeout(styleBtn, 300);
+  var obs = new MutationObserver(styleBtn);
+  obs.observe(window.parent.document.body, {childList: true, subtree: true});
+})();
+</script>
+""", height=0)
 
 if save_clicked:
     with st.spinner("Ukladám..."):
