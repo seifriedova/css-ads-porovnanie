@@ -13,6 +13,7 @@ from datetime import date
 from openpyxl import Workbook
 
 KRAJINY = ["AT","BE","CH","CZ","DE","DK","ES","FI","FR","GR","HU","IE","IT","NL","NO","PL","PT","RO","SE","SK","UK","USA"]
+USERS = ["Dan", "Kuba", "Káťa"]
 FLAGS = {
     "AT":"🇦🇹","BE":"🇧🇪","CH":"🇨🇭","CZ":"🇨🇿","DE":"🇩🇪","DK":"🇩🇰",
     "ES":"🇪🇸","FI":"🇫🇮","FR":"🇫🇷","GR":"🇬🇷","HU":"🇭🇺","IE":"🇮🇪",
