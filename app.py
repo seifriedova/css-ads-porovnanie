@@ -196,7 +196,8 @@ def extract_css_ids(df):
     col_manual = "Manuální štítky"
     valid = ["Minimum clicks", "No conversion"]
     mask = df[col_status].isin(valid)
-    excl = df[col_manual].fillna("").str.strip().str.lower() == "css vypnuto"
+    manual = df[col_manual].fillna("").str.strip().str.lower()
+    excl = manual.isin(["css vypnuto", "css vypnuto_gmc"])
     result = df[mask & ~excl][[col_id, col_name, col_status, col_manual]].copy()
     result[col_id] = result[col_id].astype(int)
     return result
